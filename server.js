@@ -22,6 +22,16 @@ db.connect(err => {
     console.log('Conectado ao banco')
 });
 
+app.get('/tags', (req, res) => {
+  db.query('SELECT * FROM tagtable', (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err });
+    } else {
+      res.json(results);
+    }
+  });
+});
+
 app.get('/posts', (req, res) => {
     db.query('SELECT * FROM postagenscontent', (err, results) => {
       if (err) {
@@ -35,7 +45,7 @@ app.get('/posts', (req, res) => {
   app.get('/posts/:postId', (req, res) => {
     const postId = req.params.postId;
 
-    db.query('SELECT * FROM postagenscontent WHERE post_id = ?', [postId], (err, results) => {
+    db.query('SELECT * FROM postagenscontent WHERE id = ?', [postId], (err, results) => {
         if (err) {
           res.status(500).json({ error: err });
         } else if(results.length === 0){
@@ -54,6 +64,34 @@ app.get('/posts', (req, res) => {
         res.status(500).json({ error: err });
       } else if(results.length === 0){
         res.status(404).json({message: 'Imagens não foram encontradas.'});
+      } else {
+        res.json(results);
+      }
+    });
+  });
+
+  app.get('/posts/:postId/tags', (req, res) => {
+    const postId = req.params.postId;
+
+    db.query('SELECT tag_id FROM tag_post WHERE post_id = ?', [postId], (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err });
+      } else if(results.length === 0){
+        res.status(404).json({message: 'Tags não foram encontradas.'});
+      } else {
+        res.json(results);
+      }
+    });
+  });
+
+  app.get('/tags/:tagId/posts', (req, res) => {
+    const tagId = req.params.tagId;
+
+    db.query('SELECT post_id FROM tag_post WHERE tag_id = ?', [tagId], (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err });
+      } else if(results.length === 0){
+        res.status(404).json({message: 'Posts não foram encontrados.'});
       } else {
         res.json(results);
       }
